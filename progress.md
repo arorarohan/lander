@@ -1,5 +1,5 @@
 ## Assignment 1: numerical dynamics in 1 dimension
-- Task 1
+- Task 1 DONE
 - Task 2
 - Task 3
 
