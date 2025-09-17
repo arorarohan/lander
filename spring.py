@@ -10,8 +10,8 @@ X = 0
 V = 1
 
 # simulation time, timestep and time
-T_MAX = 100
-DT = 0.1
+T_MAX = 400
+DT = 1.9
 T_ARRAY = np.arange(0, T_MAX, DT)
 
 #euler method
