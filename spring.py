@@ -53,29 +53,29 @@ def verlet(dt=DT, t_array=T_ARRAY, k=K, m=M, x=X, v=V) -> None:
     x_list = []
     v_list = []
 
+    #initial values
+    x_list.append(x)
+    v_list.append(v)
+    
+    #calculate first step based on Euler rule
+    a = -k * x / m
+    x = x + dt * v
+    v = v + dt * a
+    x_list.append(x)
+    v_list.append(v)
+
     #verlet integration loop
-    for i in range(len(t_array)): #use index for calling previous item later
-        #append initial/current state
-        x_list.append(x)
-        v_list.append(v)
-
-        #calculate a (common for both methods)
+    for i in range(len(t_array)-2): #use index for calling previous item later
+        #calculate a
         a = -k * x / m
+        #calculate x and v based on verlet rule
+        x_2 = x_list[i] #2 x's ago
+        x_last = x_list[i+1] #last x
+        x = x_last*2 - x_2 + (dt**2) * a
+        x_list.append(x)
 
-        #calculate new x and v based on verlet rule IF we have 2 previous values
-        if len(x_list) > 1:
-            #calculate x
-            x_2 = x_list[i-1]
-            x = x*2 - x_2 + (dt**2) * a
-
-            #calculate v
-            x_1 = x_list[i]
-            v = 1/dt * (x - x_1)
-
-        #otherwise, calculate based on euler rule
-        else:
-            x = x + dt * v
-            v = v + dt * a
+        v = 1/dt * (x - x_last)
+        v_list.append(v)
     
     # convert trajectory lists into arrays, so they can be sliced (useful for Assignment 2)
     x_array = np.array(x_list)
@@ -92,7 +92,7 @@ def verlet(dt=DT, t_array=T_ARRAY, k=K, m=M, x=X, v=V) -> None:
     plt.show()
 
 def main():
-    euler() #change depending on which function to test
+    verlet() #change depending on which function to test
 
 if __name__ == '__main__':
     main()
