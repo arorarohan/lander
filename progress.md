@@ -5,9 +5,9 @@
 
 ## Assignment 2: numerical dynamics in three dimensions 
 - Task 1 DONE
-- Task 2 
-- Task 3 
-- Task 4 
+- Task 2 DONE
+- Task 3 DONE
+- Task 4 DONE
 
 ## Asssignment 3: familiarisation with C++
 - Task
