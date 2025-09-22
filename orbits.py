@@ -39,9 +39,6 @@ def euler(position=INITIAL_POSITION, velocity=INITIAL_VELOCITY) -> None:
     # convert trajectory lists into arrays, so they can be sliced (useful for Assignment 2)
     position_array = np.array(position_list)
     velocity_array = np.array(velocity_list)
-    #debug prints
-    print(f"positions: {position_array}")
-    print(f"velocities: {velocity_array}")
 
     #for graphing, magnitudes are needed
     abs_position_list = [np.linalg.vector_norm(pos) for pos in position_array]
@@ -57,54 +54,62 @@ def euler(position=INITIAL_POSITION, velocity=INITIAL_VELOCITY) -> None:
     plt.legend()
     plt.show()
 
-'''
 #verlet method
 def verlet(position=INITIAL_POSITION, velocity=INITIAL_VELOCITY) -> None:
     
     #initialize lists
-    x_list = []
-    v_list = []
+    position_list = []
+    velocity_list = []
 
     #initial values
-    x_list.append(x)
-    v_list.append(v)
+    position_list.append(position)
+    velocity_list.append(velocity)
     
     #calculate first step based on Euler rule
-    a = -k * x / m
-    x = x + dt * v
-    v = v + dt * a
-    x_list.append(x)
-    v_list.append(v)
+    abs_position = np.linalg.vector_norm(position)
+    abs_acc = - (G * M_PLANET) / (abs_position**3) #cubed because we will multiply with full position vector
+    acceleration = position * abs_acc
+    position = position + DT * velocity # a vector operation
+    velocity = velocity + DT * acceleration #update velocity similarly
+    position_list.append(position)
+    velocity_list.append(velocity)
 
     #verlet integration loop
-    for i in range(len(t_array)-2): #use index for calling previous item later
+    for i in range(len(T_ARRAY)-2): #use index for calling previous item later
         #calculate a
-        a = -k * x / m
-        #calculate x and v based on verlet rule
-        x_2 = x_list[i] #2 x's ago
-        x_last = x_list[i+1] #last x
-        x = x_last*2 - x_2 + (dt**2) * a
-        x_list.append(x)
+        abs_position = np.linalg.vector_norm(position)
+        abs_acc = - (G * M_PLANET) / (abs_position**3) #cubed because we will multiply with full position vector
+        acceleration = position * abs_acc
 
-        v = 1/dt * (x - x_last)
-        v_list.append(v)
+        #calculate x and v based on verlet rule
+        position_2 = position_list[i] #2 x's ago
+        position_last = position_list[i+1] #last x
+        position = position_last*2 - position_2 + (DT**2) * acceleration
+        position_list.append(position)
+
+        velocity = 1/DT * (position - position_last)
+        velocity_list.append(velocity)
     
     # convert trajectory lists into arrays, so they can be sliced (useful for Assignment 2)
-    x_array = np.array(x_list)
-    v_array = np.array(v_list)
+    position_array = np.array(position_list)
+    velocity_array = np.array(velocity_list)
+
+    #create magnitudes for graphing
+    position_mags = [np.linalg.vector_norm(pos) for pos in position_array]
+    velocity_mags = [np.linalg.vector_norm(pos) for pos in velocity_array]
 
     # plot the position-time graph
     plt.figure(1)
     plt.clf()
     plt.xlabel('time (s)')
     plt.grid()
-    plt.plot(t_array, x_array, label='x (m)')
-    plt.plot(t_array, v_array, label='v (m/s)')
+    plt.plot(T_ARRAY, position_mags, label='x (m)')
+    plt.plot(T_ARRAY, velocity_mags, label='v (m/s)')
     plt.legend()
     plt.show()
-'''
+
 def main():
-    euler() #change depending on which function to test
+    verlet() #change depending on which function to test
 
 if __name__ == '__main__':
     main()
