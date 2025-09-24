@@ -1,2 +1,3 @@
 .vscode
 lander_env
+*.o
