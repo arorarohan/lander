@@ -10,7 +10,7 @@
 - Task 4 DONE
 
 ## Asssignment 3: familiarisation with C++
-- Task
+- Task DONE
 
 ## Assignment 4: landing craft simulator
 - Task

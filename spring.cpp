@@ -1,13 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
 int main() {
 
   // declare variables
-  double m, k, x, v, t_max, dt, t, a;
+  double m, k, x, v, t_max, dt, t, a, second_t, x_2;
   vector<double> t_list, x_list, v_list;
 
   // mass, spring constant, initial position and velocity
@@ -20,19 +21,28 @@ int main() {
   t_max = 100;
   dt = 0.1;
 
-  // Euler integration
+  // Verlet integration
   for (t = 0; t <= t_max; t = t + dt) {
-
+    
     // append current state to trajectories
     t_list.push_back(t);
     x_list.push_back(x);
     v_list.push_back(v);
-
-    // calculate new position and velocity
-    a = -k * x / m;
-    x = x + dt * v;
-    v = v + dt * a;
-
+    
+    // Euler for initial step
+    if (t == 0) {
+      a = -k * x / m;
+      x = x + dt * v;
+      v = v + dt * a;
+      x_2 = x_list.back(); //save old x value
+    }
+    //subsequent steps use verlet now that we have 2 previous points
+    else {
+      a = -k * x / m;
+      x = 2*x - x_2 + pow(dt, 2) * a;
+      v = 1/dt * (x - x_list.back());
+      x_2 = x_list.back();
+    }
   }
 
   // Write the trajectories to file
