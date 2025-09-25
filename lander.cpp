@@ -28,20 +28,33 @@ void autopilot (void)
   else {
     descent_rate = 0;
   }
+
+  // calculate weight adjustment delta
+  double g_mars = GRAVITY * MARS_MASS / pow(MARS_RADIUS, 2);
+  double balancing_thrust =(UNLOADED_LANDER_MASS + fuel * FUEL_DENSITY) * g_mars; // total mass times acceleration
+  double delta = balancing_thrust / MAX_THRUST - 0.1; // to get the thrust as a fraction where 1 is max. small offset to achieve touchdown
   
   // then calculate theoretical throttle adjustment
-  float kp = 0.005;
-  float kh = 0.005;
+  float kp = 0.5;
+  float kh = 0.1;
   double altitude = position.abs() - MARS_RADIUS;
-  double e = (0.5 + kh*altitude + descent_rate);
+  // target altitude for plotting
+  double target_descent_rate = 0.5 - kh*altitude;
+  // Corrected error term to provide negative feedback instead of positive feedback
+  double e = (0.5 - kh*altitude + descent_rate);
   double pout = kp * e;
 
   // now introduce real world constraints
-  double delta = 0.05; // to modify
-  if (pout <= -delta) {throttle = 0;}
-  if (pout >= 1-delta) {throttle = 1;}
-  else {throttle = delta + pout;}
-
+  // when rising (descent_rate > 0) instead of when descending.
+  if ((pout <= -delta) || (descent_rate < 0)) {
+    throttle = 0;
+  }
+  else if (pout >= 1-delta) {
+    throttle = 1;
+  }
+  else {
+    throttle = pout;
+  }
 }
 
 vector3d calculate_drag(void)
