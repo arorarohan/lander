@@ -19,7 +19,29 @@
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
 {
-  // INSERT YOUR CODE HERE
+  // calculate descent rate first
+  // position.norm() always points to planet's centre.
+  double descent_rate;
+  if (velocity.abs() > 0) {
+    descent_rate = velocity * -position.norm();
+  }
+  else {
+    descent_rate = 0;
+  }
+  
+  // then calculate theoretical throttle adjustment
+  float kp = 0.005;
+  float kh = 0.005;
+  double altitude = position.abs() - MARS_RADIUS;
+  double e = (0.5 + kh*altitude + descent_rate);
+  double pout = kp * e;
+
+  // now introduce real world constraints
+  double delta = 0.05; // to modify
+  if (pout <= -delta) {throttle = 0;}
+  if (pout >= 1-delta) {throttle = 1;}
+  else {throttle = delta + pout;}
+
 }
 
 vector3d calculate_drag(void)
@@ -36,8 +58,8 @@ vector3d calculate_drag(void)
 
   // now get drags (check for zero vel)
   vector3d lander_drag, parachute_drag, total_drag;
-  if (velocity.abs() > 0
-){
+  if (velocity.abs() > 0)
+  {
     lander_drag = -0.5 * atmospheric_density(position) * DRAG_COEF_LANDER * lander_area * pow(velocity.abs(), 2) * velocity.norm();
     parachute_drag = -0.5 * atmospheric_density(position) * DRAG_COEF_CHUTE * parachute_area * pow(velocity.abs(), 2) * velocity.norm();
     total_drag = lander_drag + parachute_drag;
