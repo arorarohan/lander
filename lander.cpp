@@ -13,6 +13,8 @@
 // ahg@eng.cam.ac.uk and gc121@eng.cam.ac.uk.
 
 #include "lander.h"
+#include <vector>
+#include <cmath>
 
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
@@ -20,11 +22,89 @@ void autopilot (void)
   // INSERT YOUR CODE HERE
 }
 
+vector3d calculate_drag(void)
+// Drag calculation helper function
+{
+  double lander_area, parachute_area;
+  lander_area = M_PI * pow(LANDER_SIZE, 2); // circle
+  parachute_area = 0; // for now
+
+  // if parachute is deployed, update parachute area
+  if (parachute_status == DEPLOYED) {
+    parachute_area = pow(2*LANDER_SIZE, 2) * 5;
+  }
+
+  // now get drags (check for zero vel)
+  vector3d lander_drag, parachute_drag, total_drag;
+  if (velocity.abs() > 0
+){
+    lander_drag = -0.5 * atmospheric_density(position) * DRAG_COEF_LANDER * lander_area * pow(velocity.abs(), 2) * velocity.norm();
+    parachute_drag = -0.5 * atmospheric_density(position) * DRAG_COEF_CHUTE * parachute_area * pow(velocity.abs(), 2) * velocity.norm();
+    total_drag = lander_drag + parachute_drag;
+  }
+  else {
+    total_drag.x, total_drag.y, total_drag.z = 0;
+  }
+
+    return total_drag;
+}
+
 void numerical_dynamics (void)
   // This is the function that performs the numerical integration to update the
   // lander's pose. The time step is delta_t (global variable).
 {
-  // INSERT YOUR CODE HERE
+  // create static lists for the position, velocity tracking across calls
+  static vector<vector3d> position_list, velocity_list;
+
+  // reset them if we are running a new scenario.
+  if (new_scenario) {
+    position_list.clear();
+    velocity_list.clear();
+    new_scenario = false;
+  }
+
+  // Calculate net acceleration on lander by vector sum of 3 forces
+  vector3d grav_acc, thrust_acc, drag_acc, thr, total_acc, position_2;
+  double total_mass;
+
+  // Start with gravity as we don't need mass
+  grav_acc = -(GRAVITY * MARS_MASS) / (pow(position.abs(), 2)) * position.norm();
+
+  // find total mass
+  total_mass = UNLOADED_LANDER_MASS + fuel * FUEL_DENSITY;
+
+  // Now thrust
+  thr = thrust_wrt_world();
+  thrust_acc = thr / total_mass;
+
+  // Now drag
+  drag_acc = calculate_drag() / total_mass;
+  
+  // sum them up to get the total acceleration
+  total_acc = grav_acc + thrust_acc + drag_acc;
+
+  // Initial setup: initial conditions then Euler.
+  if (position_list.size() == 0) {
+    position_list.push_back(position);
+    velocity_list.push_back(velocity);
+
+    position = position + delta_t * velocity;
+    velocity = velocity + delta_t * total_acc;
+    position_list.push_back(position);
+    velocity_list.push_back(velocity);
+  }
+  // Subsequent runs where we have 2 prev steps: Verlet
+  else {
+    // update position and velocity
+    position_2 = position_list[position_list.size() - 2]; // gets second last position
+    position = 2*position - position_2 + pow(delta_t, 2) * total_acc;
+    velocity = 1/delta_t * (position - position_list.back());
+
+    // now append to lists
+    position_list.push_back(position);
+    velocity_list.push_back(velocity);
+  }
+  
 
   // Here we can apply an autopilot to adjust the thrust, parachute and attitude
   if (autopilot_enabled) autopilot();
@@ -66,6 +146,7 @@ void initialize_simulation (void)
     parachute_status = NOT_DEPLOYED;
     stabilized_attitude = false;
     autopilot_enabled = false;
+    new_scenario = true;
     break;
 
   case 1:
@@ -77,6 +158,7 @@ void initialize_simulation (void)
     parachute_status = NOT_DEPLOYED;
     stabilized_attitude = true;
     autopilot_enabled = false;
+    new_scenario = true;
     break;
 
   case 2:
@@ -88,6 +170,7 @@ void initialize_simulation (void)
     parachute_status = NOT_DEPLOYED;
     stabilized_attitude = false;
     autopilot_enabled = false;
+    new_scenario = true;
     break;
 
   case 3:
@@ -99,6 +182,7 @@ void initialize_simulation (void)
     parachute_status = NOT_DEPLOYED;
     stabilized_attitude = false;
     autopilot_enabled = false;
+    new_scenario = true;
     break;
 
   case 4:
@@ -110,6 +194,7 @@ void initialize_simulation (void)
     parachute_status = NOT_DEPLOYED;
     stabilized_attitude = false;
     autopilot_enabled = false;
+    new_scenario = true;
     break;
 
   case 5:
@@ -121,18 +206,23 @@ void initialize_simulation (void)
     parachute_status = NOT_DEPLOYED;
     stabilized_attitude = true;
     autopilot_enabled = false;
+    new_scenario = true;
     break;
 
   case 6:
+    new_scenario = true;
     break;
 
   case 7:
+    new_scenario = true;
     break;
 
   case 8:
+    new_scenario = true;
     break;
 
   case 9:
+    new_scenario = true;
     break;
 
   }
