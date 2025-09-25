@@ -13,10 +13,10 @@
 - Task DONE
 
 ## Assignment 4: landing craft simulator
-- Task
+- Task DONE
 
 ## Assignment 5: autopilot
-- Task
+- Task DONE
 
 ## Extension assignments
 optional, fill if decided to do

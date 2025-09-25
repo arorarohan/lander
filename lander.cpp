@@ -40,9 +40,19 @@ void autopilot (void)
   double altitude = position.abs() - MARS_RADIUS;
   // target altitude for plotting
   double target_descent_rate = 0.5 - kh*altitude;
-  // Corrected error term to provide negative feedback instead of positive feedback
+  
+  // Error term for raw output
   double e = (0.5 - kh*altitude + descent_rate);
   double pout = kp * e;
+  
+  // output to file for plotting
+  ofstream fout;
+  fout.open("analysis.txt", std::ios::app);
+  if (fout) {
+    fout << altitude << ' ' << e << ' ' << descent_rate << endl;
+  } else {
+    cout << "Could not open trajectory file for writing" << endl;
+  }
 
   // now introduce real world constraints
   // when rising (descent_rate > 0) instead of when descending.
